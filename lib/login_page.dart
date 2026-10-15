@@ -6,6 +6,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -13,28 +14,11 @@ class LoginPage extends StatelessWidget {
             children: [
               const Spacer(flex: 2),
 
-              // Blasa lel logo
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(Icons.shield, size: 60),
-                // Ba3d ma ykoun 3andek el logo, badel el child b:
-                // child: Image.asset('assets/logo.png'),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Ism el app
-              const Text(
-                'SafeNet',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+              // Logo
+              Image.asset(
+                'assets/logo.jpg',
+                width: 280,
+                height: 280,
               ),
 
               const Spacer(flex: 3),
@@ -45,7 +29,7 @@ class LoginPage extends StatelessWidget {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: yemchi lel page mta3 connexion
+                    // TODO: aller à la page de connexion
                   },
                   child: const Text('Se connecter'),
                 ),
@@ -59,7 +43,7 @@ class LoginPage extends StatelessWidget {
                 height: 52,
                 child: OutlinedButton(
                   onPressed: () {
-                    // TODO: yemchi lel page mta3 inscription
+                    // TODO: aller à la page d'inscription
                   },
                   child: const Text('Créer un compte'),
                 ),
