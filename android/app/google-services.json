@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "386752545662",
+    "project_id": "safenet-50d35",
+    "storage_bucket": "safenet-50d35.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:386752545662:android:3259b265278b88e765692f",
+        "android_client_info": {
+          "package_name": "com.example.safenet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCa9y3mPNUqt3VF8Zsa9HDCjJ2HKjXmEwo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
