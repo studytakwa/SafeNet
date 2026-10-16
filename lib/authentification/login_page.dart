@@ -48,14 +48,10 @@ class LoginPage extends StatelessWidget {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-<<<<<<< HEAD
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ConnexionPage()),
                     );
-=======
-                    // TODO: connexion
->>>>>>> e5b49ffe719b4ff01757d2874e3ca5e5d6e26a4c
                   },
                   child: const Text('Se connecter'),
                 ),
