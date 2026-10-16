@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'inscription.dart';
 import 'connexion.dart';
 class LoginPage extends StatelessWidget {
@@ -7,7 +8,6 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -15,25 +15,47 @@ class LoginPage extends StatelessWidget {
             children: [
               const Spacer(flex: 2),
 
-              // Logo
-              Image.asset(
-                'assets/logo.jpg',
-                width: 280,
-                height: 280,
+              // Logo dans une carte arrondie
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryDark.withValues(alpha: 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: Image.asset(
+                    'assets/logo.jpg',
+                    width: 220,
+                    height: 220,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
 
               const Spacer(flex: 3),
 
-              // Bouton Se connecter (pas encore fait)
+              // Bouton Se connecter (réservé pour plus tard)
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
+<<<<<<< HEAD
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ConnexionPage()),
                     );
+=======
+                    // TODO: connexion
+>>>>>>> e5b49ffe719b4ff01757d2874e3ca5e5d6e26a4c
                   },
                   child: const Text('Se connecter'),
                 ),
