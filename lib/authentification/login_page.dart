@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'inscription.dart';
-
+import 'connexion.dart';
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -30,7 +30,10 @@ class LoginPage extends StatelessWidget {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: connexion (plus tard)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ConnexionPage()),
+                    );
                   },
                   child: const Text('Se connecter'),
                 ),
