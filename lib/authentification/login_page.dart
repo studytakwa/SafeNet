@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'inscription.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -23,13 +24,13 @@ class LoginPage extends StatelessWidget {
 
               const Spacer(flex: 3),
 
-              // Bouton Se connecter
+              // Bouton Se connecter (pas encore fait)
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: aller à la page de connexion
+                    // TODO: connexion (plus tard)
                   },
                   child: const Text('Se connecter'),
                 ),
@@ -43,7 +44,10 @@ class LoginPage extends StatelessWidget {
                 height: 52,
                 child: OutlinedButton(
                   onPressed: () {
-                    // TODO: aller à la page d'inscription
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const Inscription()),
+                    );
                   },
                   child: const Text('Créer un compte'),
                 ),
