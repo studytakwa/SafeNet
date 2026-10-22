@@ -1,17 +1,20 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import 'selfie.dart';
+
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
   @override
   State<Inscription> createState() => _EtatInscription();
 }
+
 class _EtatInscription extends State<Inscription> {
   final _cleFormulaire = GlobalKey<FormState>();
   final _ctrlEmail = TextEditingController();
   final _ctrlMotDePasse = TextEditingController();
   DateTime? _dateNaissance;
-  bool _consentement = false;
+  bool _enCours = false;
 
   @override
   void dispose() {
@@ -63,28 +66,56 @@ class _EtatInscription extends State<Inscription> {
         backgroundColor: AppColors.primaryDark,
       ));
 
-  void _continuer() {
+  Future<void> _continuer() async {
+    if (_enCours) return;
     if (!_cleFormulaire.currentState!.validate()) return;
     if (_dateNaissance == null) {
       return _afficherMessage('Choisissez votre date de naissance');
     }
     if (_calculerAge(_dateNaissance!) >= 18) {
-      return _afficherMessage('Inscription refusée : réservé aux moins de 18 ans');
-    }
-    if (!_consentement) {
-      return _afficherMessage('Vous devez accepter le consentement');
+      return _afficherMessage('Inscription refusée : moins de 18 ans requis');
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Selfie(
-          email: _ctrlEmail.text.trim(),
-          motDePasse: _ctrlMotDePasse.text,
-          dateNaissance: _dateNaissance!,
-        ),
-      ),
-    );
+    setState(() => _enCours = true);
+    try {
+      final email = _ctrlEmail.text.trim();
+      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: _ctrlMotDePasse.text,
+      );
+
+      await FirebaseFirestore.instance
+          .collection('utilisateurs')
+          .doc(cred.user!.uid)
+          .set({
+        'email': email,
+        'dateNaissance': Timestamp.fromDate(_dateNaissance!),
+        'creeLe': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+      _afficherMessage('Compte créé avec succès !');
+      Navigator.of(context).popUntil((r) => r.isFirst);
+    } on FirebaseAuthException catch (e) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          _afficherMessage('Cet email est déjà utilisé.');
+          break;
+        case 'weak-password':
+          _afficherMessage('Mot de passe trop faible.');
+          break;
+        case 'invalid-email':
+          _afficherMessage('Email invalide.');
+          break;
+        default:
+          _afficherMessage('Création du compte impossible. Réessayez.');
+      }
+    } catch (e) {
+      debugPrint('Erreur inscription: $e');
+      _afficherMessage('Erreur, réessayez.');
+    } finally {
+      if (mounted) setState(() => _enCours = false);
+    }
   }
 
   @override
@@ -123,7 +154,8 @@ class _EtatInscription extends State<Inscription> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email',
-                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+                  prefixIcon:
+                  Icon(Icons.email_outlined, color: AppColors.primary),
                 ),
                 validator: (v) =>
                 (v == null || !v.contains('@')) ? 'Email invalide' : null,
@@ -134,7 +166,8 @@ class _EtatInscription extends State<Inscription> {
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Mot de passe',
-                  prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+                  prefixIcon:
+                  Icon(Icons.lock_outline, color: AppColors.primary),
                 ),
                 validator: (v) =>
                 (v == null || v.length < 6) ? '6 caractères minimum' : null,
@@ -146,32 +179,19 @@ class _EtatInscription extends State<Inscription> {
                 child: InputDecorator(
                   decoration: const InputDecoration(
                     labelText: 'Date de naissance',
-                    prefixIcon: Icon(Icons.calendar_today_outlined, color: AppColors.primary),
+                    prefixIcon: Icon(Icons.calendar_today_outlined,
+                        color: AppColors.primary),
                   ),
                   child: Text(
                     texteDate,
                     style: TextStyle(
-                      color: _dateNaissance == null ? Colors.black45 : AppColors.primaryDark,
-                      fontWeight: _dateNaissance == null ? FontWeight.normal : FontWeight.w600,
+                      color: _dateNaissance == null
+                          ? Colors.black45
+                          : AppColors.primaryDark,
+                      fontWeight: _dateNaissance == null
+                          ? FontWeight.normal
+                          : FontWeight.w600,
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.mintContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: CheckboxListTile(
-                  value: _consentement,
-                  onChanged: (v) => setState(() => _consentement = v ?? false),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: AppColors.primary,
-                  title: const Text(
-                    'J\'accepte que mon visage soit analysé par la caméra pour vérifier mon âge.',
-                    style: TextStyle(fontSize: 13, color: AppColors.primaryDark),
                   ),
                 ),
               ),
@@ -180,8 +200,15 @@ class _EtatInscription extends State<Inscription> {
                 width: double.infinity,
                 height: 52,
                 child: FilledButton(
-                  onPressed: _continuer,
-                  child: const Text('Continuer : selfie obligatoire'),
+                  onPressed: _enCours ? null : _continuer,
+                  child: _enCours
+                      ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: Colors.white),
+                  )
+                      : const Text('Créer mon compte'),
                 ),
               ),
             ],
