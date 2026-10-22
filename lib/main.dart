@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'authentification/login_page.dart';
+import 'view/authentification/auth_wrapper.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SafeNet',
       theme: AppTheme.lightTheme,
-      home: const LoginPage(),
+      home: const AuthWrapper(),
     );
   }
 }

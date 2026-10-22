@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/profil.dart';
+import '../services/profil_service.dart';
 import '../controllers/profil_controller.dart';
 
 class ModifierProfilPage extends StatefulWidget {

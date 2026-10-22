@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/profil.dart';
-import '../controllers/profil_controller.dart';
+import '../services/profil_service.dart';
 import 'modifier_profil_page.dart';
 
 class ProfilPage extends StatelessWidget {
