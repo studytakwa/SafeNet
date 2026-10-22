@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/profil.dart';
 import '../services/profil_service.dart';
-import '../controllers/profil_controller.dart';
 
 class ModifierProfilPage extends StatefulWidget {
   final Profil profil;
@@ -52,10 +51,10 @@ class _EtatModifierProfil extends State<ModifierProfilPage> {
 
     setState(() => _enregistrement = true);
     try {
-      await _service.enregistrer(
+      await _service.enregistrerProfil(
         nom: _ctrlNom.text.trim(),
         bio: _ctrlBio.text.trim(),
-        photo: _nouvellePhoto,
+        photo: _nouvellePhoto, uid: '',
       );
       if (!mounted) return;
       if (!widget.creation) Navigator.pop(context);
