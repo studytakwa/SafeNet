@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import '../controllers/auth_controller.dart';
+import '../profil/profil_gate.dart';
 class ConnexionPage extends StatefulWidget {
   const ConnexionPage({super.key});
 
@@ -14,6 +15,7 @@ class _EtatConnexion extends State<ConnexionPage> {
   final _ctrlMotDePasse = TextEditingController();
   bool _chargement = false;
   bool _masquerMotDePasse = true;
+  final _controleur = AuthController();
 
   @override
   void dispose() {
@@ -22,21 +24,35 @@ class _EtatConnexion extends State<ConnexionPage> {
     super.dispose();
   }
 
+
   Future<void> _seConnecter() async {
     if (!_cleFormulaire.currentState!.validate()) return;
 
     setState(() => _chargement = true);
+
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _ctrlEmail.text.trim(),
-        password: _ctrlMotDePasse.text,
+      final erreur = await _controleur.seConnecter(
+        _ctrlEmail.text.trim(),
+        _ctrlMotDePasse.text,
       );
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Connexion réussie')),
+
+      if (erreur != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(erreur)),
+        );
+        return;
+      }
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfilGate()),
+            (route) => false,
       );
     } on FirebaseAuthException catch (e) {
       String message;
+
       switch (e.code) {
         case 'user-not-found':
         case 'wrong-password':
@@ -52,17 +68,33 @@ class _EtatConnexion extends State<ConnexionPage> {
         case 'network-request-failed':
           message = 'Pas de connexion internet.';
           break;
+        case 'too-many-requests':
+          message = 'Trop de tentatives. Réessayez plus tard.';
+          break;
         default:
           message = 'Erreur de connexion. Réessayez.';
       }
+
       if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Une erreur inattendue est survenue.'),
+        ),
+      );
     } finally {
-      if (mounted) setState(() => _chargement = false);
+      if (mounted) {
+        setState(() => _chargement = false);
+      }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-
+import '../profil/profil_gate.dart';
 class Inscription extends StatefulWidget {
   const Inscription({super.key});
   @override
@@ -82,6 +82,12 @@ class _EtatInscription extends State<Inscription> {
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email,
         password: _ctrlMotDePasse.text,
+      );
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const ProfilGate()),
+            (route) => false,
       );
 
       await FirebaseFirestore.instance
