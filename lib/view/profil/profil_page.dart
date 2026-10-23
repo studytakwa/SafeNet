@@ -4,7 +4,7 @@ import '../../controllers/profil_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
 import 'modifier_profil_page.dart';
-import 'package:safenet/theme/Profil widgets.dart';
+import 'package:safenet/view/profil/widgets/Profil%20widgets.dart';
 
 class ProfilPage extends StatelessWidget {
   // uid vide = mon propre profil ; sinon, profil d'un autre utilisateur

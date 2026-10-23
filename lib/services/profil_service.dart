@@ -18,6 +18,16 @@ class ProfilService {
     return _doc(uid).snapshots().map((s) => ProfilModel.fromMap(uid, s.data()));
   }
 
+  /// Charge les profils qui ont un nom (utilisé par la recherche).
+  /// Le filtrage par nom se fait ensuite dans l'application.
+  Future<List<ProfilModel>> chargerProfils({int limite = 300}) async {
+    final snap = await _db.collection(_collection).limit(limite).get();
+    return snap.docs
+        .map((d) => ProfilModel.fromMap(d.id, d.data()))
+        .where((p) => p.nom.isNotEmpty)
+        .toList();
+  }
+
   /// Met à jour le nom, la bio et la photo dans Firestore
   Future<void> enregistrerProfil({
     required String uid,

@@ -41,6 +41,7 @@ dependencies:
   google_mlkit_face_detection: ^0.15.1
   cloud_functions: ^7.0.0
   image_picker: ^1.2.4
+  video_player: ^2.9.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

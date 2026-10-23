@@ -11,6 +11,11 @@ class ProfilController {
     return _profilService.suivreProfil(uid);
   }
 
+  /// Profils disponibles pour la recherche.
+  Future<List<ProfilModel>> chargerProfils() {
+    return _profilService.chargerProfils();
+  }
+
   Future<String?> enregistrer({
     required String nom,
     required String bio,
