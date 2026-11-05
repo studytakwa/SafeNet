@@ -2,10 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:safenet/view/Home/widgets/profile_search_bar.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/profil_controller.dart';
+import '../../controllers/social_controller.dart';
 import '../../models/profil_model.dart';
+import '../../theme/app_theme.dart';
 import '../profil/profil_page.dart';
+import '../social/amis_page.dart';
+import '../social/chat_list_page.dart';
+import '../social/notification_page.dart';
 import 'widgets/home_common.dart';
+import 'widgets/home_feed.dart';
 import 'widgets/post_composer.dart';
+
+void _ouvrir(BuildContext context, Widget page) {
+  Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+}
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
   @override
@@ -40,11 +51,14 @@ class HomeScreen extends StatelessWidget {
             IconButton(
               onPressed: () {},
               tooltip: 'Rechercher',
-              icon: const Icon(Icons.search),
+              icon: const Icon(Icons.search, color: AppColors.primaryDark),
             ),
-          const _RoundIcon(icon: Icons.chat_bubble_outline, tooltip: 'Messages'),
-          const _RoundIcon(
-              icon: Icons.notifications_none, tooltip: 'Notifications'),
+          _RoundIcon(
+            icon: Icons.chat_bubble_outline_rounded,
+            tooltip: 'Messages',
+            onTap: () => _ouvrir(context, const ChatListPage()),
+          ),
+          const _NotifIcon(),
           const _AvatarMenu(),
         ],
         bottom: const PreferredSize(
@@ -52,7 +66,7 @@ class HomeScreen extends StatelessWidget {
           child: Divider(height: 1, color: HomeColors.line),
         ),
       ),
-      // Corps : zone de publication sous l'en-tête
+      // Corps : zone de publication + fil d'actualité
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -63,6 +77,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 ProfileSearchBar(),
                 PostComposer(),
+                HomeFeed(),
               ],
             ),
           ),
@@ -142,25 +157,62 @@ class _SearchField extends StatelessWidget {
 class _RoundIcon extends StatelessWidget {
   final IconData icon;
   final String tooltip;
-  const _RoundIcon({required this.icon, required this.tooltip});
+  final VoidCallback onTap;
+  final int badge;
+  const _RoundIcon({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.badge = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8),
-      child: Material(
-        color: HomeColors.soft,
-        shape: const CircleBorder(),
-        child: IconButton(
-          onPressed: () {},
-          tooltip: tooltip,
-          icon: Icon(icon, color: HomeColors.brand, size: 20),
+      padding: const EdgeInsets.only(left: 6),
+      child: IconButton(
+        onPressed: onTap,
+        tooltip: tooltip,
+        style: IconButton.styleFrom(
+          backgroundColor: HomeColors.soft,
+          padding: const EdgeInsets.all(10),
+        ),
+        icon: Badge(
+          isLabelVisible: badge > 0,
+          label: Text('$badge'),
+          child: Icon(icon, color: AppColors.primaryDark, size: 22),
         ),
       ),
     );
   }
 }
-/// Avatar en haut à droite : ouvre "Mon profil" ou "Se déconnecter".
+
+/// Icône de notifications avec le nombre de notifications non lues.
+class _NotifIcon extends StatefulWidget {
+  const _NotifIcon();
+
+  @override
+  State<_NotifIcon> createState() => _NotifIconState();
+}
+
+class _NotifIconState extends State<_NotifIcon> {
+  late final Stream<int> _stream = SocialController().nonLues();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<int>(
+      stream: _stream,
+      builder: (context, snap) => _RoundIcon(
+        icon: Icons.notifications_none_rounded,
+        tooltip: 'Notifications',
+        badge: snap.data ?? 0,
+        onTap: () => _ouvrir(context, const NotificationsPage()),
+      ),
+    );
+  }
+}
+
+/// Avatar en haut à droite : "Mon profil", "Mes amis" ou "Se déconnecter".
 class _AvatarMenu extends StatelessWidget {
   const _AvatarMenu();
 
@@ -182,20 +234,20 @@ class _AvatarMenu extends StatelessWidget {
           offset: const Offset(0, 48),
           onSelected: (value) {
             if (value == 'profil') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ProfilPage()),
-              );
+              _ouvrir(context, const ProfilPage());
+            } else if (value == 'amis') {
+              _ouvrir(context, const AmisPage());
             } else if (value == 'logout') {
               AuthController().seDeconnecter();
             }
           },
           itemBuilder: (_) => const [
             PopupMenuItem(value: 'profil', child: Text('Mon profil')),
+            PopupMenuItem(value: 'amis', child: Text('Mes amis')),
             PopupMenuItem(value: 'logout', child: Text('Se déconnecter')),
           ],
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Avatar(letter: lettre, color: HomeColors.purple),
           ),
         );

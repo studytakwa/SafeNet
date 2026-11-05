@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../controllers/profil_controller.dart';
 import '../../../models/profil_model.dart';
+import '../../../theme/app_theme.dart';
 import '../../profil/profil_page.dart';
 import 'home_common.dart';
+
 class ProfileSearchBar extends StatefulWidget {
   const ProfileSearchBar({super.key});
 
@@ -102,7 +104,7 @@ class _ProfileSearchBarState extends State<ProfileSearchBar> {
               hintText: 'Rechercher un profil par nom…',
               hintStyle: const TextStyle(color: HomeColors.mute, fontSize: 14),
               prefixIcon:
-              const Icon(Icons.search, size: 20, color: HomeColors.mute),
+              const Icon(Icons.search, size: 20, color: AppColors.primary),
               suffixIcon: recherche
                   ? IconButton(
                 tooltip: 'Effacer',
@@ -114,12 +116,20 @@ class _ProfileSearchBarState extends State<ProfileSearchBar> {
               )
                   : null,
               filled: true,
-              fillColor: HomeColors.input,
+              fillColor: AppColors.background,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
-                borderSide: BorderSide.none,
+                borderSide: const BorderSide(color: HomeColors.line),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: const BorderSide(color: HomeColors.line),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
             ),
           ),
@@ -131,7 +141,10 @@ class _ProfileSearchBarState extends State<ProfileSearchBar> {
                 child: SizedBox(
                   width: 22,
                   height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primaryDark,
+                  ),
                 ),
               )
             else if (_erreur)
@@ -178,26 +191,26 @@ class _Resultat extends StatelessWidget {
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       leading: CircleAvatar(
-        backgroundColor: HomeColors.blue,
+        backgroundColor: AppColors.accent,
         backgroundImage: photo != null ? MemoryImage(photo) : null,
         child: photo == null
             ? Text(
           profil.nom.trim()[0].toUpperCase(),
           style: const TextStyle(
-              fontWeight: FontWeight.w700, color: HomeColors.ink),
+              fontWeight: FontWeight.bold, color: AppColors.primaryDark),
         )
             : null,
       ),
       title: Text(profil.nom,
           style: const TextStyle(
-              fontWeight: FontWeight.w600, color: HomeColors.ink)),
+              fontWeight: FontWeight.bold, color: AppColors.primaryDark)),
       subtitle: profil.bio.isNotEmpty
           ? Text(profil.bio,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(color: HomeColors.mute))
           : null,
-      trailing: const Icon(Icons.chevron_right, color: HomeColors.mute),
+      trailing: const Icon(Icons.chevron_right, color: AppColors.primaryDark),
     );
   }
 }

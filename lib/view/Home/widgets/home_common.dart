@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import '../../../theme/app_theme.dart';
 
-/// Couleurs de l'écran d'accueil (reprises de la maquette).
+/// Couleurs de l'application SafeNet unifiées avec [AppColors].
 class HomeColors {
-  static const bg = Color(0xFFF4F7FB);
-  static const brand = Color(0xFF156A7A);
-  static const ink = Color(0xFF12303A);
-  static const mute = Color(0xFF6B8088);
-  static const soft = Color(0xFFD9F2EE);
-  static const line = Color(0xFFE6EDF2);
-  static const input = Color(0xFFF1F5F9);
-  static const blue = Color(0xFF7CC6D6);
-  static const purple = Color(0xFFB9A3E0);
-  static const mint = Color(0xFFD6F3EE);
-  static const teal = Color(0xFF2A93A6);
+  static const bg = AppColors.background;
+  static const brand = AppColors.primaryDark;
+  static const ink = Color(0xFF1E293B);
+  static const mute = Color(0xFF64748B);
+  static const soft = AppColors.mintContainer;
+  static const line = Color(0xFFE2E8F0);
+  static const input = Color(0xFFF8FAFC);
+  static const blue = AppColors.secondary;
+  static const purple = AppColors.accent;
+  static const mint = AppColors.mintContainer;
+  static const teal = AppColors.primary;
 }
 
 /// Carte blanche arrondie utilisée partout.
@@ -29,9 +30,16 @@ class HomeCard extends StatelessWidget {
       padding: padding,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: HomeColors.line),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDark.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: child,
     );
@@ -55,7 +63,7 @@ class Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onDark = color == HomeColors.teal;
+    final onDark = color == HomeColors.teal || color == HomeColors.brand;
     return Stack(
       clipBehavior: Clip.none,
       children: [

@@ -4,9 +4,11 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/post_model.dart';
+import 'social_controller.dart';
 
 class PostController {
   final _db = FirebaseFirestore.instance;
+  final _social = SocialController();
 
   String get uid => FirebaseAuth.instance.currentUser?.uid ?? '';
 
@@ -30,6 +32,19 @@ class PostController {
     l.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return l;
   });
+
+  /// Publications des amis (Firestore limite `whereIn` à 30 valeurs).
+  Stream<List<PostModel>> fluxAmis(List<String> ids) {
+    if (ids.isEmpty) return Stream.value(<PostModel>[]);
+    return _posts
+        .where('authorId', whereIn: ids.take(30).toList())
+        .snapshots()
+        .map((s) {
+      final l = s.docs.map(PostModel.fromDoc).toList();
+      l.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return l.take(20).toList();
+    });
+  }
 
   Future<void> publier({
     required String authorName,
@@ -61,13 +76,16 @@ class PostController {
     await batch.commit();
   }
 
-  Future<void> basculerLike(PostModel post) {
+  Future<void> basculerLike(PostModel post) async {
     final liked = post.likedBy(uid);
-    return _posts.doc(post.id).update({
+    await _posts.doc(post.id).update({
       'likes': liked
           ? FieldValue.arrayRemove([uid])
           : FieldValue.arrayUnion([uid]),
     });
+    if (!liked) {
+      await _social.notifier(post.authorId, 'like', postId: post.id);
+    }
   }
 
   Stream<List<CommentModel>> commentaires(String postId) => _posts
@@ -86,6 +104,8 @@ class PostController {
       'createdAt': FieldValue.serverTimestamp(),
     });
     await ref.update({'commentCount': FieldValue.increment(1)});
+    final auteur = (await ref.get()).data()?['authorId'] as String?;
+    await _social.notifier(auteur ?? '', 'comment', postId: postId);
   }
 
   Future<void> supprimerCommentaire(String postId, String commentId) async {
