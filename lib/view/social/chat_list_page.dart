@@ -6,7 +6,6 @@ import '../Home/widgets/home_common.dart';
 import '../posts/post_card.dart' show formatDate;
 import 'chat_page.dart';
 import 'user_builder.dart';
-
 class ChatListPage extends StatelessWidget {
   const ChatListPage({super.key});
 

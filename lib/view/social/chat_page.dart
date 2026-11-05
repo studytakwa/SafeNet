@@ -13,7 +13,6 @@ class ChatPage extends StatefulWidget {
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
-
 class _ChatPageState extends State<ChatPage> {
   final _s = SocialController();
   final _ctrl = TextEditingController();
