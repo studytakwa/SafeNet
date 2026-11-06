@@ -5,6 +5,7 @@ import '../../controllers/profil_controller.dart';
 import '../../controllers/social_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
+import '../groups/group_page.dart';
 import '../profil/profil_page.dart';
 import '../social/amis_page.dart';
 import '../social/chat_list_page.dart';
@@ -212,7 +213,8 @@ class _NotifIconState extends State<_NotifIcon> {
   }
 }
 
-/// Avatar en haut à droite : "Mon profil", "Mes amis" ou "Se déconnecter".
+/// Avatar en haut à droite : "Mon profil", "Mes amis", "Groupes"
+/// ou "Se déconnecter".
 class _AvatarMenu extends StatelessWidget {
   const _AvatarMenu();
 
@@ -237,6 +239,8 @@ class _AvatarMenu extends StatelessWidget {
               _ouvrir(context, const ProfilPage());
             } else if (value == 'amis') {
               _ouvrir(context, const AmisPage());
+            } else if (value == 'groupes') {
+              _ouvrir(context, const GroupesPage());
             } else if (value == 'logout') {
               AuthController().seDeconnecter();
             }
@@ -244,6 +248,7 @@ class _AvatarMenu extends StatelessWidget {
           itemBuilder: (_) => const [
             PopupMenuItem(value: 'profil', child: Text('Mon profil')),
             PopupMenuItem(value: 'amis', child: Text('Mes amis')),
+            PopupMenuItem(value: 'groupes', child: Text('Groupes')),
             PopupMenuItem(value: 'logout', child: Text('Se déconnecter')),
           ],
           child: Padding(

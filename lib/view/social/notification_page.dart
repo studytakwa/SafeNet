@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../controllers/group_controller.dart';
 import '../../controllers/social_controller.dart';
+import '../../models/groupe_model.dart';
 import '../../models/social_model.dart';
 import '../../theme/app_theme.dart';
 import '../Home/widgets/home_common.dart';
+import '../groups/group_chat_page.dart';
 import '../posts/post_card.dart' show formatDate;
 import '../profil/profil_page.dart';
 import 'amis_page.dart';
@@ -31,6 +34,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
         return "vous a envoyé une demande d'ami";
       case 'friend_accepted':
         return "a accepté votre demande d'ami";
+      case 'group_request':
+        return 'souhaite rejoindre votre groupe';
+      case 'group_accepted':
+        return 'a accepté votre demande pour rejoindre le groupe';
       case 'like':
         return 'a aimé votre publication';
       case 'comment':
@@ -41,6 +48,17 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   void _ouvrir(NotifModel n) {
+    if (n.type == 'group_request' || n.type == 'group_accepted') {
+      if (n.postId != null && n.postId!.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => GroupeChatPage(groupId: n.postId!),
+          ),
+        );
+        return;
+      }
+    }
     final isFriend = n.type == 'friend_request' || n.type == 'friend_accepted';
     Navigator.push(
       context,
@@ -103,6 +121,16 @@ class _NotificationsPageState extends State<NotificationsPage> {
             itemCount: list.length,
             itemBuilder: (_, i) {
               final n = list[i];
+              Widget? trailingWidget;
+              if (n.type == 'friend_request') {
+                trailingWidget = _BoutonAccepterNotif(fromUid: n.fromUid, socialController: _s);
+              } else if (n.type == 'group_request' && n.postId != null) {
+                trailingWidget = _BoutonAccepterGroupeNotif(
+                  groupId: n.postId!,
+                  applicantUid: n.fromUid,
+                );
+              }
+
               return Card(
                 elevation: 0,
                 margin: const EdgeInsets.symmetric(vertical: 4),
@@ -148,9 +176,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       ),
                     ),
                   ),
-                  trailing: n.type == 'friend_request'
-                      ? _BoutonAccepterNotif(fromUid: n.fromUid, socialController: _s)
-                      : null,
+                  trailing: trailingWidget,
                   onTap: () => _ouvrir(n),
                 ),
               );
@@ -231,6 +257,98 @@ class _BoutonAccepterNotifState extends State<_BoutonAccepterNotif> {
             textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
           onPressed: _enCours ? null : _accepter,
+          icon: _enCours
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.check_rounded, size: 16),
+          label: const Text('Accepter'),
+        );
+      },
+    );
+  }
+}
+
+class _BoutonAccepterGroupeNotif extends StatefulWidget {
+  final String groupId;
+  final String applicantUid;
+  const _BoutonAccepterGroupeNotif({
+    required this.groupId,
+    required this.applicantUid,
+  });
+
+  @override
+  State<_BoutonAccepterGroupeNotif> createState() =>
+      _BoutonAccepterGroupeNotifState();
+}
+
+class _BoutonAccepterGroupeNotifState
+    extends State<_BoutonAccepterGroupeNotif> {
+  final _groupCtrl = GroupController();
+  bool _enCours = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<GroupModel?>(
+      stream: _groupCtrl.groupe(widget.groupId),
+      builder: (context, snap) {
+        final g = snap.data;
+        final estMembre = g != null && g.isMember(widget.applicantUid);
+
+        if (estMembre) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.mintContainer,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle_rounded,
+                    color: AppColors.primaryDark, size: 16),
+                SizedBox(width: 4),
+                Text(
+                  'Accepté',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryDark,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primaryDark,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            textStyle:
+                const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+          onPressed: _enCours
+              ? null
+              : () async {
+                  if (g == null) return;
+                  setState(() => _enCours = true);
+                  try {
+                    await _groupCtrl.accepterDemande(g, widget.applicantUid);
+                  } catch (_) {
+                  } finally {
+                    if (mounted) setState(() => _enCours = false);
+                  }
+                },
           icon: _enCours
               ? const SizedBox(
                   width: 14,
