@@ -7,10 +7,12 @@ import '/view/posts/post_card.dart';
 /// Liste de publications.
 /// - `PostsList()` : fil d'actualité (accueil)
 /// - `PostsList(uid: monUid)` : publications d'un utilisateur (page profil)
+/// - `PostsList(authorIds: [...])` : publications de ces utilisateurs (amis)
 /// À placer dans un SingleChildScrollView / Column (pas de scroll interne).
 class PostsList extends StatefulWidget {
   final String? uid;
-  const PostsList({super.key, this.uid});
+  final List<String>? authorIds;
+  const PostsList({super.key, this.uid, this.authorIds});
 
   @override
   State<PostsList> createState() => _PostsListState();
@@ -28,11 +30,15 @@ class _PostsListState extends State<PostsList> {
   @override
   void didUpdateWidget(covariant PostsList old) {
     super.didUpdateWidget(old);
-    if (old.uid != widget.uid) _stream = _build();
+    if (old.uid != widget.uid ||
+        old.authorIds?.join(',') != widget.authorIds?.join(',')) {
+      _stream = _build();
+    }
   }
 
   Stream<List<PostModel>> _build() {
     final c = PostController();
+    if (widget.authorIds != null) return c.fluxAmis(widget.authorIds!);
     return widget.uid == null ? c.flux() : c.fluxUtilisateur(widget.uid!);
   }
 

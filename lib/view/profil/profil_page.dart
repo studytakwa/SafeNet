@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../controllers/profil_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
+import '../Home/widgets/post_list.dart';
+import '../social/friend_botton.dart';
 import 'modifier_profil_page.dart';
 import 'package:safenet/view/profil/widgets/Profil%20widgets.dart';
-import '../Home/widgets/post_list.dart';
 
 class ProfilPage extends StatelessWidget {
   // uid vide = mon propre profil ; sinon, profil d'un autre utilisateur
@@ -102,6 +103,9 @@ class ProfilPage extends StatelessWidget {
                                 icon: const Icon(Icons.edit_outlined),
                                 label: const Text('Modifier le profil'),
                               ),
+                            ] else ...[
+                              const SizedBox(height: 22),
+                              FriendButton(otherUid: idAffiche),
                             ],
                           ],
                         ),
