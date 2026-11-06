@@ -5,6 +5,7 @@ import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
 import 'modifier_profil_page.dart';
 import 'package:safenet/view/profil/widgets/Profil%20widgets.dart';
+import '../Home/widgets/post_list.dart';
 
 class ProfilPage extends StatelessWidget {
   // uid vide = mon propre profil ; sinon, profil d'un autre utilisateur
@@ -104,6 +105,33 @@ class ProfilPage extends StatelessWidget {
                             ],
                           ],
                         ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Publications de l'utilisateur affiché
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 640),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(left: 8, bottom: 12),
+                            child: Text(
+                              'Publications',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                          ),
+                          PostsList(uid: idAffiche),
+                        ],
                       ),
                     ),
                   ),

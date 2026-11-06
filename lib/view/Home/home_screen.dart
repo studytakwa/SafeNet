@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:safenet/view/Home/widgets/profile_search_bar.dart';
-
 import '../../controllers/auth_controller.dart';
 import '../../controllers/profil_controller.dart';
 import '../../models/profil_model.dart';
 import '../profil/profil_page.dart';
 import 'widgets/home_common.dart';
 import 'widgets/post_composer.dart';
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     final showSearch = MediaQuery.of(context).size.width >= 700;
-
     return Scaffold(
       backgroundColor: HomeColors.bg,
       appBar: AppBar(
@@ -164,7 +160,6 @@ class _RoundIcon extends StatelessWidget {
     );
   }
 }
-
 /// Avatar en haut à droite : ouvre "Mon profil" ou "Se déconnecter".
 class _AvatarMenu extends StatelessWidget {
   const _AvatarMenu();
