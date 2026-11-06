@@ -57,13 +57,18 @@ class GroupModel {
 
   factory GroupModel.fromDoc(DocumentSnapshot<Map<String, dynamic>> d) {
     final m = d.data() ?? {};
+    final membersList = List<String>.from(m['members'] ?? const []);
+    final rawCreator = (m['creatorId'] as String?) ?? '';
+    final creator = rawCreator.isNotEmpty
+        ? rawCreator
+        : (membersList.isNotEmpty ? membersList.first : '');
     return GroupModel(
       id: d.id,
       name: (m['name'] as String?) ?? '',
       theme: (m['theme'] as String?) ?? 'Autre',
       description: (m['description'] as String?) ?? '',
-      creatorId: (m['creatorId'] as String?) ?? '',
-      members: List<String>.from(m['members'] ?? const []),
+      creatorId: creator,
+      members: membersList,
       pendingRequests: List<String>.from(m['pendingRequests'] ?? const []),
       createdAt: (m['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );

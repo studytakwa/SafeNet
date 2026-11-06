@@ -22,6 +22,7 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
   final _ctrl = GroupController();
   final _tc = TextEditingController();
   final _picker = ImagePicker();
+  final Set<String> _demandesLocales = {};
 
   late final Stream<GroupModel?> _groupe = _ctrl.groupe(widget.groupId);
   late final Stream<List<GroupMessage>> _messages =
@@ -166,184 +167,211 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
     return ok == true;
   }
 
-  void _afficherMembres(GroupModel g, bool createur) {
+  void _afficherMembres(GroupModel initialGroup, bool createur) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      builder: (_) => StreamBuilder<GroupModel?>(
+        stream: _ctrl.groupe(initialGroup.id),
+        builder: (context, snap) {
+          final g = snap.data ?? initialGroup;
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.75,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.group_rounded, color: AppColors.primaryDark),
-                const SizedBox(width: 8),
-                Text(
-                  'Membres du groupe (${g.members.length})',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppColors.primaryDark,
+                Row(
+                  children: [
+                    const Icon(Icons.group_rounded, color: AppColors.primaryDark),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Membres du groupe (${g.members.length})',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const Divider(height: 24),
+                Expanded(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: g.members.length,
+                    itemBuilder: (_, i) {
+                      final memberUid = g.members[i];
+                      final estCreateurMembre = memberUid == g.creatorId;
+                      final estMoi = memberUid == _ctrl.uid;
+
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(vertical: 2),
+                        leading: UserAvatar(uid: memberUid),
+                        title: Row(
+                          children: [
+                            Flexible(child: UserName(uid: memberUid)),
+                            if (estCreateurMembre) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.mintContainer,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text('Créateur',
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primaryDark)),
+                              ),
+                            ],
+                          ],
+                        ),
+                        trailing: (createur && !estMoi && !estCreateurMembre)
+                            ? OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.redAccent,
+                                  side: const BorderSide(color: Colors.redAccent),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                ),
+                                onPressed: () async {
+                                  if (await _confirmer(
+                                      'Retirer ce membre du groupe ?', 'Retirer')) {
+                                    await _ctrl.retirerMembre(g.id, memberUid);
+                                  }
+                                },
+                                icon: const Icon(Icons.person_remove_rounded,
+                                    size: 16),
+                                label: const Text('Retirer'),
+                              )
+                            : null,
+                      );
+                    },
                   ),
                 ),
               ],
             ),
-            const Divider(height: 24),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: g.members.length,
-                itemBuilder: (_, i) {
-                  final memberUid = g.members[i];
-                  final estCreateurMembre = memberUid == g.creatorId;
-                  final estMoi = memberUid == _ctrl.uid;
-
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(vertical: 2),
-                    leading: UserAvatar(uid: memberUid),
-                    title: Row(
-                      children: [
-                        Flexible(child: UserName(uid: memberUid)),
-                        if (estCreateurMembre) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.mintContainer,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text('Créateur',
-                                style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primaryDark)),
-                          ),
-                        ],
-                      ],
-                    ),
-                    trailing: (createur && !estMoi && !estCreateurMembre)
-                        ? OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.redAccent,
-                              side: const BorderSide(color: Colors.redAccent),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                            ),
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              if (await _confirmer(
-                                  'Retirer ce membre du groupe ?', 'Retirer')) {
-                                await _ctrl.retirerMembre(g.id, memberUid);
-                              }
-                            },
-                            icon: const Icon(Icons.person_remove_rounded,
-                                size: 16),
-                            label: const Text('Retirer'),
-                          )
-                        : null,
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  void _afficherDemandes(GroupModel g) {
+  void _afficherDemandes(GroupModel initialGroup) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      builder: (_) => StreamBuilder<GroupModel?>(
+        stream: _ctrl.groupe(initialGroup.id),
+        builder: (context, snap) {
+          if (snap.connectionState == ConnectionState.waiting && !snap.hasData) {
+            return const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final g = snap.data ?? initialGroup;
+          final pending = g.pendingRequests;
+
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.75,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.person_add_rounded,
-                    color: AppColors.primaryDark),
-                const SizedBox(width: 8),
-                Text(
-                  'Demandes d\'adhésion (${g.pendingRequests.length})',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppColors.primaryDark,
-                  ),
+                Row(
+                  children: [
+                    const Icon(Icons.person_add_rounded,
+                        color: AppColors.primaryDark),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Demandes d\'adhésion (${pending.length})',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: AppColors.primaryDark,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                const Divider(height: 24),
+                if (pending.isEmpty)
+                  const Expanded(
+                    child: Center(
+                      child: Text('Aucune demande en attente.',
+                          style: TextStyle(color: HomeColors.mute)),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: pending.length,
+                      itemBuilder: (_, i) {
+                        final applicantUid = pending[i];
+                        return ListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 2),
+                          leading: UserAvatar(uid: applicantUid),
+                          title: UserName(uid: applicantUid),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              FilledButton.icon(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.primaryDark,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                ),
+                                onPressed: () async {
+                                  await _ctrl.accepterDemande(g, applicantUid);
+                                },
+                                icon: const Icon(Icons.check_rounded, size: 16),
+                                label: const Text('Accepter'),
+                              ),
+                              const SizedBox(width: 6),
+                              OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.redAccent,
+                                  side: const BorderSide(color: Colors.redAccent),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 4),
+                                ),
+                                onPressed: () async {
+                                  await _ctrl.refuserDemande(g.id, applicantUid);
+                                },
+                                icon: const Icon(Icons.close_rounded, size: 16),
+                                label: const Text('Refuser'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
               ],
             ),
-            const Divider(height: 24),
-            if (g.pendingRequests.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(
-                  child: Text('Aucune demande en attente.',
-                      style: TextStyle(color: HomeColors.mute)),
-                ),
-              )
-            else
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: g.pendingRequests.length,
-                  itemBuilder: (_, i) {
-                    final applicantUid = g.pendingRequests[i];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 2),
-                      leading: UserAvatar(uid: applicantUid),
-                      title: UserName(uid: applicantUid),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.primaryDark,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                            ),
-                            onPressed: () async {
-                              await _ctrl.accepterDemande(g, applicantUid);
-                              if (mounted) Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.check_rounded, size: 16),
-                            label: const Text('Accepter'),
-                          ),
-                          const SizedBox(width: 6),
-                          OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.redAccent,
-                              side: const BorderSide(color: Colors.redAccent),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                            ),
-                            onPressed: () async {
-                              await _ctrl.refuserDemande(g.id, applicantUid);
-                              if (mounted) Navigator.pop(context);
-                            },
-                            icon: const Icon(Icons.close_rounded, size: 16),
-                            label: const Text('Refuser'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -368,7 +396,10 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
           );
         }
         final membre = g.isMember(_ctrl.uid);
-        final createur = g.creatorId == _ctrl.uid;
+        final createur = g.creatorId == _ctrl.uid ||
+            (g.creatorId.isEmpty &&
+                g.members.isNotEmpty &&
+                g.members.first == _ctrl.uid);
 
         return Scaffold(
           backgroundColor: HomeColors.bg,
@@ -453,8 +484,8 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
                     if (createur)
                       PopupMenuItem(
                           value: 'demandes',
-                          child:
-                              Text('Demandes (${g.pendingRequests.length})')),
+                          child: Text(
+                              'Demandes${g.pendingRequests.isNotEmpty ? ' (${g.pendingRequests.length})' : ''}')),
                     if (createur)
                       const PopupMenuItem(
                           value: 'delete', child: Text('Supprimer le groupe'))
@@ -473,7 +504,7 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
 
   /// Fiche affichée aux non-membres.
   Widget _fiche(GroupModel g) {
-    final estEnAttente = g.isPending(_ctrl.uid);
+    final estEnAttente = g.isPending(_ctrl.uid) || _demandesLocales.contains(g.id);
 
     return Center(
       child: Padding(
@@ -517,7 +548,12 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                     ),
-                    onPressed: () => _ctrl.annulerDemande(g.id),
+                    onPressed: () {
+                      setState(() {
+                        _demandesLocales.remove(g.id);
+                      });
+                      _ctrl.annulerDemande(g.id);
+                    },
                     icon: const Icon(Icons.hourglass_top_rounded),
                     label: const Text('Demande envoyée · Annuler'),
                   )
@@ -527,7 +563,31 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                     ),
-                    onPressed: () => _ctrl.demanderRejoindre(g),
+                    onPressed: () async {
+                      setState(() {
+                        _demandesLocales.add(g.id);
+                      });
+                      final res = await _ctrl.demanderRejoindre(g);
+                      if (!mounted) return;
+                      if (res.success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(res.message),
+                              duration: const Duration(seconds: 2)),
+                        );
+                      } else {
+                        if (!g.isPending(_ctrl.uid)) {
+                          setState(() {
+                            _demandesLocales.remove(g.id);
+                          });
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(res.message),
+                              backgroundColor: Colors.redAccent),
+                        );
+                      }
+                    },
                     icon: const Icon(Icons.group_add_outlined),
                     label: const Text('Demander à rejoindre'),
                   ),

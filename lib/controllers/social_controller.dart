@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/social_model.dart';
-
-/// Amis, notifications et chat (Firestore uniquement).
 class SocialController {
   final _db = FirebaseFirestore.instance;
 

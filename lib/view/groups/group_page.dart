@@ -17,12 +17,50 @@ class _GroupesPageState extends State<GroupesPage> {
   final _ctrl = GroupController();
   late final Stream<List<GroupModel>> _stream = _ctrl.tousLesGroupes();
   String? _theme; // null = tous les thèmes
+  final Set<String> _demandesLocales = {};
 
   void _ouvrir(String groupId) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => GroupeChatPage(groupId: groupId)),
     );
+  }
+
+  Future<void> _demanderRejoindre(GroupModel g) async {
+    setState(() {
+      _demandesLocales.add(g.id);
+    });
+
+    final res = await _ctrl.demanderRejoindre(g);
+    if (!mounted) return;
+
+    if (res.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res.message),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } else {
+      if (!g.isPending(_ctrl.uid)) {
+        setState(() {
+          _demandesLocales.remove(g.id);
+        });
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res.message),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  Future<void> _annulerDemande(String groupId) async {
+    setState(() {
+      _demandesLocales.remove(groupId);
+    });
+    await _ctrl.annulerDemande(groupId);
   }
 
   Future<void> _creer() async {
@@ -146,12 +184,18 @@ class _GroupesPageState extends State<GroupesPage> {
                             'Aucun groupe à découvrir.\nCréez le premier !',
                         onTap: _ouvrir,
                         ctrl: _ctrl,
+                        demandesLocales: _demandesLocales,
+                        onDemanderRejoindre: _demanderRejoindre,
+                        onAnnulerDemande: _annulerDemande,
                       ),
                       _Liste(
                         groupes: miens,
                         vide: "Vous n'avez rejoint aucun groupe.",
                         onTap: _ouvrir,
                         ctrl: _ctrl,
+                        demandesLocales: _demandesLocales,
+                        onDemanderRejoindre: _demanderRejoindre,
+                        onAnnulerDemande: _annulerDemande,
                       ),
                     ],
                   );
@@ -170,12 +214,18 @@ class _Liste extends StatelessWidget {
   final String vide;
   final void Function(String id) onTap;
   final GroupController ctrl;
+  final Set<String> demandesLocales;
+  final void Function(GroupModel g) onDemanderRejoindre;
+  final void Function(String id) onAnnulerDemande;
 
   const _Liste({
     required this.groupes,
     required this.vide,
     required this.onTap,
     required this.ctrl,
+    required this.demandesLocales,
+    required this.onDemanderRejoindre,
+    required this.onAnnulerDemande,
   });
 
   @override
@@ -195,11 +245,40 @@ class _Liste extends StatelessWidget {
       itemCount: groupes.length,
       itemBuilder: (_, i) {
         final g = groupes[i];
+        final estCreateur = g.creatorId == ctrl.uid ||
+            (g.creatorId.isEmpty &&
+                g.members.isNotEmpty &&
+                g.members.first == ctrl.uid);
         final estMembre = g.isMember(ctrl.uid);
-        final estEnAttente = g.isPending(ctrl.uid);
+        final estEnAttente =
+            g.isPending(ctrl.uid) || demandesLocales.contains(g.id);
 
         Widget actionButton;
-        if (estMembre) {
+        if (estCreateur && g.pendingRequests.isNotEmpty) {
+          actionButton = Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.person_add_rounded,
+                    size: 16, color: Colors.redAccent),
+                const SizedBox(width: 4),
+                Text(
+                  '${g.pendingRequests.length}',
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else if (estMembre) {
           actionButton = const Icon(Icons.chevron_right, color: AppColors.primaryDark);
         } else if (estEnAttente) {
           actionButton = OutlinedButton(
@@ -208,7 +287,7 @@ class _Liste extends StatelessWidget {
               side: const BorderSide(color: AppColors.primary),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: () => ctrl.annulerDemande(g.id),
+            onPressed: () => onAnnulerDemande(g.id),
             child: const Text('En attente'),
           );
         } else {
@@ -217,7 +296,7 @@ class _Liste extends StatelessWidget {
               backgroundColor: AppColors.primaryDark,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: () => ctrl.demanderRejoindre(g),
+            onPressed: () => onDemanderRejoindre(g),
             child: const Text('Rejoindre'),
           );
         }
@@ -244,6 +323,7 @@ class _Liste extends StatelessWidget {
                     color: AppColors.primaryDark)),
             subtitle: Text(
               '${g.theme} · ${g.members.length} membre${g.members.length > 1 ? 's' : ''}'
+              '${estCreateur && g.pendingRequests.isNotEmpty ? ' · ${g.pendingRequests.length} demande${g.pendingRequests.length > 1 ? 's' : ''} en attente' : ''}'
               '${g.description.isEmpty ? '' : '\n${g.description}'}',
               maxLines: 3,
               overflow: TextOverflow.ellipsis,

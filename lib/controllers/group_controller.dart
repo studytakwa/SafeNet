@@ -5,6 +5,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/groupe_model.dart';
 
+class DemandeResult {
+  final bool success;
+  final String message;
+  const DemandeResult(this.success, this.message);
+}
+
 /// Groupes thématiques (Firestore uniquement).
 class GroupController {
   final _db = FirebaseFirestore.instance;
@@ -43,38 +49,75 @@ class GroupController {
     return ref.id;
   }
 
-  /// Demander à rejoindre un groupe (envoie une demande au créateur)
-  Future<void> demanderRejoindre(GroupModel group) async {
-    if (group.isMember(uid) || group.isPending(uid)) return;
-
-    await _groups.doc(group.id).update({
-      'pendingRequests': FieldValue.arrayUnion([uid]),
-    });
-
-    // Envoi de la notification au créateur du groupe
-    if (group.creatorId.isNotEmpty && group.creatorId != uid) {
-      await _db.collection('notifications').add({
-        'toUid': group.creatorId,
-        'fromUid': uid,
-        'type': 'group_request',
-        'postId': group.id,
-        'read': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+  /// Demander à rejoindre un groupe (envoie une demande au créateur/admin)
+  Future<DemandeResult> demanderRejoindre(GroupModel group) async {
+    final currentUid = uid;
+    if (currentUid.isEmpty) {
+      return const DemandeResult(
+          false, "Vous devez être connecté pour envoyer une demande.");
     }
+    if (group.isMember(currentUid)) {
+      return const DemandeResult(
+          false, "Vous êtes déjà membre de ce groupe.");
+    }
+    if (group.isPending(currentUid)) {
+      return const DemandeResult(
+          true, "Votre demande est déjà en attente de validation.");
+    }
+
+    bool updateSuccess = false;
+    try {
+      await _groups.doc(group.id).update({
+        'pendingRequests': FieldValue.arrayUnion([currentUid]),
+      });
+      updateSuccess = true;
+    } catch (_) {
+      try {
+        await _groups.doc(group.id).set({
+          'pendingRequests': FieldValue.arrayUnion([currentUid]),
+        }, SetOptions(merge: true));
+        updateSuccess = true;
+      } catch (e2) {
+        return DemandeResult(false, "Erreur d'envoi Firestore: $e2");
+      }
+    }
+
+    if (!updateSuccess) {
+      return const DemandeResult(
+          false, "Impossible d'enregistrer la demande sur le serveur.");
+    }
+
+    try {
+      final targetAdmin = group.creatorId.isNotEmpty
+          ? group.creatorId
+          : (group.members.isNotEmpty ? group.members.first : '');
+
+      if (targetAdmin.isNotEmpty && targetAdmin != currentUid) {
+        await _db.collection('notifications').add({
+          'toUid': targetAdmin,
+          'fromUid': currentUid,
+          'type': 'group_request',
+          'postId': group.id,
+          'read': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (_) {}
+
+    return const DemandeResult(true, "Demande envoyée à l'administrateur !");
   }
 
   /// Annuler une demande d'adhésion envoyée
-  Future<void> annulerDemande(String groupId) => _groups.doc(groupId).update({
+  Future<void> annulerDemande(String groupId) => _groups.doc(groupId).set({
         'pendingRequests': FieldValue.arrayRemove([uid]),
-      });
+      }, SetOptions(merge: true));
 
   /// Le créateur accepte la demande d'un membre
   Future<void> accepterDemande(GroupModel group, String applicantUid) async {
-    await _groups.doc(group.id).update({
+    await _groups.doc(group.id).set({
       'pendingRequests': FieldValue.arrayRemove([applicantUid]),
       'members': FieldValue.arrayUnion([applicantUid]),
-    });
+    }, SetOptions(merge: true));
 
     // Notification à l'utilisateur accepté
     await _db.collection('notifications').add({
@@ -89,9 +132,9 @@ class GroupController {
 
   /// Le créateur refuse la demande d'un membre
   Future<void> refuserDemande(String groupId, String applicantUid) =>
-      _groups.doc(groupId).update({
+      _groups.doc(groupId).set({
         'pendingRequests': FieldValue.arrayRemove([applicantUid]),
-      });
+      }, SetOptions(merge: true));
 
   /// Quitter un groupe (pour un membre)
   Future<void> quitter(String id) =>
