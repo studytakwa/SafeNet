@@ -5,31 +5,26 @@ import '../../theme/app_theme.dart';
 import '../Home/widgets/home_common.dart';
 import '../posts/post_card.dart' show formatDate;
 import 'user_builder.dart';
-
 class ChatPage extends StatefulWidget {
   final String otherUid;
   const ChatPage({super.key, required this.otherUid});
-
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
 class _ChatPageState extends State<ChatPage> {
   final _s = SocialController();
   final _ctrl = TextEditingController();
-
   @override
   void dispose() {
     _ctrl.dispose();
     super.dispose();
   }
-
   void _envoyer() {
     final t = _ctrl.text.trim();
     if (t.isEmpty) return;
     _ctrl.clear();
     _s.envoyer(widget.otherUid, t);
   }
-
   @override
   Widget build(BuildContext context) {
     final other = widget.otherUid;
