@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '/theme/app_theme.dart';
-import 'package:safenet/theme/Auth layout.dart';
+import '../../theme/auth_layout.dart';
 import 'connexion.dart';
 import 'inscription.dart';
 

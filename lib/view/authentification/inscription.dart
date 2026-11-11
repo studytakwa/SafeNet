@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/inscription_controller.dart';
 import '../../theme/app_theme.dart';
-import '../../theme/Auth layout.dart';
+import '../../theme/auth_layout.dart';
 import 'connexion.dart';
 
 class Inscription extends StatefulWidget {

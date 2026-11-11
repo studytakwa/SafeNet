@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../controllers/post_controller.dart';
 import '../../../controllers/profil_controller.dart';
+import '../../../models/groupe_model.dart'; // kThemes
+import '../../../models/post_model.dart';
 import '../../../models/profil_model.dart';
 import 'home_common.dart';
 
-/// Zone "Quoi de neuf ?" : texte + photo + humeur + Publier.
+/// Zone "Quoi de neuf ?" : type + texte + photo + humeur + Publier.
 class PostComposer extends StatefulWidget {
   const PostComposer({super.key});
 
@@ -26,6 +28,8 @@ class _PostComposerState extends State<PostComposer> {
 
   Uint8List? _imageBytes;
   bool _loading = false;
+  String _type = 'publication';
+  String _categorie = kThemes.first;
 
   @override
   void initState() {
@@ -42,6 +46,19 @@ class _PostComposerState extends State<PostComposer> {
     super.dispose();
   }
 
+  String _indice(String prenom) {
+    switch (_type) {
+      case 'astuce':
+        return 'Partage une astuce utile…';
+      case 'note':
+        return 'Écris ta note de cours…';
+      case 'question':
+        return 'Pose ta question à la communauté…';
+      default:
+        return prenom.isEmpty ? 'Quoi de neuf ?' : 'Quoi de neuf, $prenom ?';
+    }
+  }
+
   Future<void> _pickImage() async {
     // La photo est réduite et compressée pour tenir dans Firestore.
     final f = await _picker.pickImage(
@@ -55,7 +72,8 @@ class _PostComposerState extends State<PostComposer> {
     if (bytes.length > _maxBytes) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Image trop lourde, choisissez-en une autre.')),
+          const SnackBar(
+              content: Text('Image trop lourde, choisissez-en une autre.')),
         );
       }
       return;
@@ -64,7 +82,9 @@ class _PostComposerState extends State<PostComposer> {
   }
 
   void _pickMood() {
-    const emojis = ['😀', '😂', '😍', '🥰', '😎', '🤔', '😢', '😡', '👍', '🙏', '🎉', '❤️'];
+    const emojis = [
+      '😀', '😂', '😍', '🥰', '😎', '🤔', '😢', '😡', '👍', '🙏', '🎉', '❤️'
+    ];
     showModalBottomSheet(
       context: context,
       builder: (_) => Padding(
@@ -98,6 +118,8 @@ class _PostComposerState extends State<PostComposer> {
         authorName: nom,
         text: _ctrl.text.trim(),
         imageBytes: _imageBytes,
+        type: _type,
+        categorie: _type == 'publication' ? '' : _categorie,
       );
       _ctrl.clear();
       setState(() => _imageBytes = null);
@@ -127,6 +149,30 @@ class _PostComposerState extends State<PostComposer> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
+              // Choix du type de publication
+              SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (final t in kTypesPost)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          avatar: Icon(iconeTypePost(t),
+                              size: 16,
+                              color: _type == t
+                                  ? HomeColors.brand
+                                  : HomeColors.mute),
+                          label: Text(libelleTypePost(t)),
+                          selected: _type == t,
+                          onSelected: (_) => setState(() => _type = t),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -138,9 +184,7 @@ class _PostComposerState extends State<PostComposer> {
                       minLines: 1,
                       maxLines: 5,
                       decoration: InputDecoration(
-                        hintText: prenom.isEmpty
-                            ? 'Quoi de neuf ?'
-                            : 'Quoi de neuf, $prenom ?',
+                        hintText: _indice(prenom),
                         hintStyle: const TextStyle(color: HomeColors.mute),
                         filled: true,
                         fillColor: HomeColors.input,
@@ -156,6 +200,29 @@ class _PostComposerState extends State<PostComposer> {
                   ),
                 ],
               ),
+              // Thème, seulement pour astuce / note / question
+              if (_type != 'publication') ...[
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  initialValue: _categorie,
+                  decoration: InputDecoration(
+                    labelText: 'Thème',
+                    isDense: true,
+                    filled: true,
+                    fillColor: HomeColors.input,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  items: [
+                    for (final t in kThemes)
+                      DropdownMenuItem(value: t, child: Text(t)),
+                  ],
+                  onChanged: (v) =>
+                      setState(() => _categorie = v ?? _categorie),
+                ),
+              ],
               if (_imageBytes != null) ...[
                 const SizedBox(height: 12),
                 Stack(

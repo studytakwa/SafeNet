@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/connexion_controller.dart';
 import '../../theme/app_theme.dart';
-import '../../theme/Auth layout.dart';
+import '../../theme/auth_layout.dart';
 import 'inscription.dart';
 
 class ConnexionPage extends StatefulWidget {

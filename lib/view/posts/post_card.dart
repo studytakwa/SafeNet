@@ -6,6 +6,7 @@ import '../../../controllers/post_controller.dart';
 import '../../../models/post_model.dart';
 import 'comments_sheet.dart';
 import 'package:safenet/view/Home/widgets/home_common.dart';
+import 'package:safenet/view/Home/widgets/type_badge.dart';
 
 String formatDate(DateTime d) {
   final diff = DateTime.now().difference(d);
@@ -16,8 +17,8 @@ String formatDate(DateTime d) {
   return '${two(d.day)}/${two(d.month)}/${d.year} ${two(d.hour)}:${two(d.minute)}';
 }
 
-/// Une publication : auteur, menu ⋮ (modifier / supprimer), photo,
-/// likes et commentaires.
+/// Une publication : auteur, étiquette de type, menu ⋮ (modifier / supprimer),
+/// photo, likes et commentaires (ou réponses pour une question).
 class PostCard extends StatelessWidget {
   final PostModel post;
   const PostCard({super.key, required this.post});
@@ -27,8 +28,14 @@ class PostCard extends StatelessWidget {
     final ctrl = PostController();
     final isMine = post.authorId == ctrl.uid;
     final liked = post.likedBy(ctrl.uid);
+    final isQuestion = post.type == 'question';
+    final hasBadge = post.type != 'publication';
     final lettre =
     post.authorName.isEmpty ? '?' : post.authorName[0].toUpperCase();
+
+    final nbLabel = isQuestion
+        ? '${post.commentCount} réponse${post.commentCount > 1 ? 's' : ''}'
+        : '${post.commentCount} commentaire${post.commentCount > 1 ? 's' : ''}';
 
     return HomeCard(
       child: Column(
@@ -45,7 +52,9 @@ class PostCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post.authorName.isEmpty ? 'Utilisateur' : post.authorName,
+                        post.authorName.isEmpty
+                            ? 'Utilisateur'
+                            : post.authorName,
                         style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             color: HomeColors.ink),
@@ -74,9 +83,18 @@ class PostCard extends StatelessWidget {
               ],
             ),
           ),
-          if (post.text.isNotEmpty)
+          // Étiquette : Astuce / Note de cours / Question (+ thème)
+          if (hasBadge)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TypeBadge(post: post),
+              ),
+            ),
+          if (post.text.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.fromLTRB(16, hasBadge ? 0 : 12, 16, 0),
               child: Text(post.text,
                   style: const TextStyle(fontSize: 15, color: HomeColors.ink)),
             ),
@@ -93,10 +111,7 @@ class PostCard extends StatelessWidget {
                 Text('${post.likes.length}',
                     style: const TextStyle(color: HomeColors.mute)),
                 const Spacer(),
-                Text(
-                  '${post.commentCount} commentaire${post.commentCount > 1 ? 's' : ''}',
-                  style: const TextStyle(color: HomeColors.mute),
-                ),
+                Text(nbLabel, style: const TextStyle(color: HomeColors.mute)),
               ],
             ),
           ),
@@ -120,10 +135,15 @@ class PostCard extends StatelessWidget {
               Expanded(
                 child: TextButton.icon(
                   onPressed: () => showCommentsSheet(context, post.id),
-                  icon: const Icon(Icons.mode_comment_outlined,
-                      color: HomeColors.mute, size: 20),
-                  label: const Text('Commenter',
-                      style: TextStyle(
+                  icon: Icon(
+                    isQuestion
+                        ? Icons.reply_rounded
+                        : Icons.mode_comment_outlined,
+                    color: HomeColors.mute,
+                    size: 20,
+                  ),
+                  label: Text(isQuestion ? 'Répondre' : 'Commenter',
+                      style: const TextStyle(
                           color: HomeColors.mute,
                           fontWeight: FontWeight.w600)),
                 ),

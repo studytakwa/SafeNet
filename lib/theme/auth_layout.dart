@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import 'app_theme.dart';
 
 /// Nom affiché du réseau (à modifier ici une seule fois).
 const String nomReseau = 'SafeNet';
@@ -78,7 +78,7 @@ class LogoReseau extends StatelessWidget {
       child: Image.asset(
         'assets/logo.jpg',
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Icon(
+        errorBuilder: (context, error, stackTrace) => Icon(
           Icons.chat_bubble_outline_rounded,
           color: Colors.white,
           size: taille * 0.5,

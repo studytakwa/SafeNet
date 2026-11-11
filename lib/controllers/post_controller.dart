@@ -45,16 +45,29 @@ class PostController {
       return l.take(20).toList();
     });
   }
-
+  /// Publications d'un type donné (astuce, note, question).
+  /// Tri côté client : pas d'index Firestore à créer.
+  Stream<List<PostModel>> fluxParType(String type) => _posts
+      .where('type', isEqualTo: type)
+      .snapshots()
+      .map((s) {
+    final l = s.docs.map(PostModel.fromDoc).toList();
+    l.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return l.take(30).toList();
+  });
   Future<void> publier({
     required String authorName,
     required String text,
     Uint8List? imageBytes,
+    String type = 'publication',
+    String categorie = '',
   }) {
     return _posts.add({
       'authorId': uid,
       'authorName': authorName,
       'text': text,
+      'type': type,
+      'categorie': categorie,
       'imageBase64': imageBytes != null ? base64Encode(imageBytes) : null,
       'createdAt': FieldValue.serverTimestamp(),
       'edited': false,

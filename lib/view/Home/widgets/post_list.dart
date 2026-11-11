@@ -8,11 +8,13 @@ import '/view/posts/post_card.dart';
 /// - `PostsList()` : fil d'actualité (accueil)
 /// - `PostsList(uid: monUid)` : publications d'un utilisateur (page profil)
 /// - `PostsList(authorIds: [...])` : publications de ces utilisateurs (amis)
+/// - `type: 'astuce' | 'note' | 'question'` : filtre par type de publication
 /// À placer dans un SingleChildScrollView / Column (pas de scroll interne).
 class PostsList extends StatefulWidget {
   final String? uid;
   final List<String>? authorIds;
-  const PostsList({super.key, this.uid, this.authorIds});
+  final String? type;
+  const PostsList({super.key, this.uid, this.authorIds, this.type});
 
   @override
   State<PostsList> createState() => _PostsListState();
@@ -31,6 +33,7 @@ class _PostsListState extends State<PostsList> {
   void didUpdateWidget(covariant PostsList old) {
     super.didUpdateWidget(old);
     if (old.uid != widget.uid ||
+        old.type != widget.type ||
         old.authorIds?.join(',') != widget.authorIds?.join(',')) {
       _stream = _build();
     }
@@ -38,8 +41,21 @@ class _PostsListState extends State<PostsList> {
 
   Stream<List<PostModel>> _build() {
     final c = PostController();
-    if (widget.authorIds != null) return c.fluxAmis(widget.authorIds!);
-    return widget.uid == null ? c.flux() : c.fluxUtilisateur(widget.uid!);
+    final type = widget.type;
+
+    if (widget.authorIds != null) {
+      final s = c.fluxAmis(widget.authorIds!);
+      return type == null
+          ? s
+          : s.map((l) => l.where((p) => p.type == type).toList());
+    }
+    if (widget.uid != null) {
+      final s = c.fluxUtilisateur(widget.uid!);
+      return type == null
+          ? s
+          : s.map((l) => l.where((p) => p.type == type).toList());
+    }
+    return type == null ? c.flux() : c.fluxParType(type);
   }
 
   @override
@@ -71,7 +87,9 @@ class _PostsListState extends State<PostsList> {
           );
         }
         return Column(
-          children: [for (final p in posts) PostCard(key: ValueKey(p.id), post: p)],
+          children: [
+            for (final p in posts) PostCard(key: ValueKey(p.id), post: p)
+          ],
         );
       },
     );

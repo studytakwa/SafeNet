@@ -5,8 +5,10 @@ import '../../controllers/profil_controller.dart';
 import '../../controllers/social_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
+import '../contenus/contenus_page.dart';
 import '../groups/group_page.dart';
 import '../profil/profil_page.dart';
+import '../quiz/quiz_list_view.dart';
 import '../social/amis_page.dart';
 import '../social/chat_list_page.dart';
 import '../social/notification_page.dart';
@@ -54,6 +56,11 @@ class HomeScreen extends StatelessWidget {
               tooltip: 'Rechercher',
               icon: const Icon(Icons.search, color: AppColors.primaryDark),
             ),
+          _RoundIcon(
+            icon: Icons.quiz_outlined,
+            tooltip: 'Quiz entre amis',
+            onTap: () => _ouvrir(context, QuizListView()),
+          ),
           _RoundIcon(
             icon: Icons.chat_bubble_outline_rounded,
             tooltip: 'Messages',
@@ -213,8 +220,8 @@ class _NotifIconState extends State<_NotifIcon> {
   }
 }
 
-/// Avatar en haut à droite : "Mon profil", "Mes amis", "Groupes"
-/// ou "Se déconnecter".
+/// Avatar en haut à droite : "Mon profil", "Mes amis", "Groupes",
+/// "Contenus éducatifs", "Quiz entre amis" ou "Se déconnecter".
 class _AvatarMenu extends StatelessWidget {
   const _AvatarMenu();
 
@@ -241,6 +248,10 @@ class _AvatarMenu extends StatelessWidget {
               _ouvrir(context, const AmisPage());
             } else if (value == 'groupes') {
               _ouvrir(context, const GroupesPage());
+            } else if (value == 'contenus') {
+              _ouvrir(context, const ContenusPage());
+            } else if (value == 'quiz') {
+              _ouvrir(context, QuizListView());
             } else if (value == 'logout') {
               AuthController().seDeconnecter();
             }
@@ -249,6 +260,9 @@ class _AvatarMenu extends StatelessWidget {
             PopupMenuItem(value: 'profil', child: Text('Mon profil')),
             PopupMenuItem(value: 'amis', child: Text('Mes amis')),
             PopupMenuItem(value: 'groupes', child: Text('Groupes')),
+            PopupMenuItem(
+                value: 'contenus', child: Text('Contenus éducatifs')),
+            PopupMenuItem(value: 'quiz', child: Text('Quiz entre amis')),
             PopupMenuItem(value: 'logout', child: Text('Se déconnecter')),
           ],
           child: Padding(

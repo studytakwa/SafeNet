@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../controllers/profil_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
-import 'package:safenet/view/profil/widgets/Profil%20widgets.dart';
+import 'widgets/profil_widgets.dart';
 
 class ModifierProfilPage extends StatefulWidget {
   final ProfilModel profil;
