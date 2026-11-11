@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
         titleSpacing: 16,
         title: Row(
           children: [
-            const _Logo(),
+            const Flexible(child: _Logo()),
             if (showSearch) ...[
               const SizedBox(width: 24),
               Expanded(
@@ -56,11 +56,14 @@ class HomeScreen extends StatelessWidget {
               tooltip: 'Rechercher',
               icon: const Icon(Icons.search, color: AppColors.primaryDark),
             ),
-          _RoundIcon(
-            icon: Icons.quiz_outlined,
-            tooltip: 'Quiz entre amis',
-            onTap: () => _ouvrir(context, QuizListView()),
-          ),
+          // Sur téléphone, le quiz est dans le menu de l'avatar
+          // (pour éviter le débordement de la barre du haut).
+          if (showSearch)
+            _RoundIcon(
+              icon: Icons.quiz_outlined,
+              tooltip: 'Quiz entre amis',
+              onTap: () => _ouvrir(context, QuizListView()),
+            ),
           _RoundIcon(
             icon: Icons.chat_bubble_outline_rounded,
             tooltip: 'Messages',
@@ -122,12 +125,16 @@ class _Logo extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Text(
-          'SafeNet',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: HomeColors.brand,
+        const Flexible(
+          child: Text(
+            'SafeNet',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: HomeColors.brand,
+            ),
           ),
         ),
       ],
