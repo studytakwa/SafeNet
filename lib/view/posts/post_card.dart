@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../../../controllers/post_controller.dart';
 import '../../../models/post_model.dart';
+import '../../../theme/app_theme.dart';
 import 'comments_sheet.dart';
 import 'package:safenet/view/Home/widgets/home_common.dart';
 import 'package:safenet/view/Home/widgets/type_badge.dart';
@@ -83,6 +84,54 @@ class PostCard extends StatelessWidget {
               ],
             ),
           ),
+          if (isMine && post.status != 'approved')
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: post.status == 'rejected'
+                      ? Colors.redAccent.withValues(alpha: 0.1)
+                      : AppColors.mintContainer,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: post.status == 'rejected'
+                        ? Colors.redAccent
+                        : AppColors.primary,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      post.status == 'rejected'
+                          ? Icons.cancel_outlined
+                          : Icons.hourglass_top_rounded,
+                      size: 16,
+                      color: post.status == 'rejected'
+                          ? Colors.redAccent
+                          : AppColors.primaryDark,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        post.status == 'rejected'
+                            ? 'Refusé par l\'admin : ${post.rejectionReason ?? 'Non conforme'}'
+                            : 'En attente de modération par l\'administrateur',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: post.status == 'rejected'
+                              ? Colors.redAccent
+                              : AppColors.primaryDark,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           // Étiquette : Astuce / Note de cours / Question (+ thème)
           if (hasBadge)
             Padding(

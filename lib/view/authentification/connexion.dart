@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/connexion_controller.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/auth_layout.dart';
+import '../Admin/admin_login_page.dart';
 import 'inscription.dart';
 
 class ConnexionPage extends StatefulWidget {
@@ -171,6 +172,21 @@ class _EtatConnexion extends State<ConnexionPage> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primaryDark,
+            ),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminLoginPage()),
+            ),
+            icon: const Icon(Icons.admin_panel_settings_outlined, size: 20),
+            label: const Text(
+              'Connexion Administrateur',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

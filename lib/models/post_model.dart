@@ -57,6 +57,10 @@ class PostModel {
   final List<String> likes;
   final int commentCount;
 
+  /// Modération : 'approved' | 'pending' | 'rejected'
+  final String status;
+  final String? rejectionReason;
+
   const PostModel({
     required this.id,
     required this.authorId,
@@ -69,6 +73,8 @@ class PostModel {
     this.edited = false,
     this.likes = const [],
     this.commentCount = 0,
+    this.status = 'approved',
+    this.rejectionReason,
   });
 
   bool likedBy(String uid) => uid.isNotEmpty && likes.contains(uid);
@@ -95,6 +101,8 @@ class PostModel {
       edited: (m['edited'] as bool?) ?? false,
       likes: likesList,
       commentCount: count,
+      status: (m['status'] as String?) ?? 'approved',
+      rejectionReason: m['rejectionReason'] as String?,
     );
   }
 
@@ -110,6 +118,8 @@ class PostModel {
       'edited': edited,
       'likes': likes,
       'commentCount': commentCount,
+      'status': status,
+      if (rejectionReason != null) 'rejectionReason': rejectionReason,
     };
   }
 }

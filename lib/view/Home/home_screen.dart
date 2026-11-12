@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:safenet/view/Home/widgets/profile_search_bar.dart';
+import '../../controllers/admin_controller.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/profil_controller.dart';
 import '../../controllers/social_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
+import '../Admin/admin_shell.dart';
 import '../contenus/contenus_page.dart';
 import '../groups/group_page.dart';
 import '../profil/profil_page.dart';
@@ -235,6 +237,7 @@ class _AvatarMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profilController = ProfilController();
+    final adminController = AdminController();
     final uid = profilController.uidCourant;
 
     return StreamBuilder<ProfilModel>(
@@ -245,37 +248,63 @@ class _AvatarMenu extends StatelessWidget {
             ? profil.nom[0].toUpperCase()
             : 'S';
 
-        return PopupMenuButton<String>(
-          tooltip: 'Mon compte',
-          offset: const Offset(0, 48),
-          onSelected: (value) {
-            if (value == 'profil') {
-              _ouvrir(context, const ProfilPage());
-            } else if (value == 'amis') {
-              _ouvrir(context, const AmisPage());
-            } else if (value == 'groupes') {
-              _ouvrir(context, const GroupesPage());
-            } else if (value == 'contenus') {
-              _ouvrir(context, const ContenusPage());
-            } else if (value == 'quiz') {
-              _ouvrir(context, QuizListView());
-            } else if (value == 'logout') {
-              AuthController().seDeconnecter();
-            }
+        return StreamBuilder<bool>(
+          stream: adminController.roleAdmin(),
+          builder: (context, adminSnap) {
+            final isAdmin = adminSnap.data == true;
+
+            return PopupMenuButton<String>(
+              tooltip: 'Mon compte',
+              offset: const Offset(0, 48),
+              onSelected: (value) {
+                if (value == 'admin') {
+                  _ouvrir(context, const AdminShell());
+                } else if (value == 'profil') {
+                  _ouvrir(context, const ProfilPage());
+                } else if (value == 'amis') {
+                  _ouvrir(context, const AmisPage());
+                } else if (value == 'groupes') {
+                  _ouvrir(context, const GroupesPage());
+                } else if (value == 'contenus') {
+                  _ouvrir(context, const ContenusPage());
+                } else if (value == 'quiz') {
+                  _ouvrir(context, QuizListView());
+                } else if (value == 'logout') {
+                  AuthController().seDeconnecter();
+                }
+              },
+              itemBuilder: (_) => [
+                if (isAdmin)
+                  const PopupMenuItem(
+                    value: 'admin',
+                    child: Row(
+                      children: [
+                        Icon(Icons.admin_panel_settings,
+                            color: AppColors.primaryDark, size: 20),
+                        SizedBox(width: 8),
+                        Text('Espace Administrateur',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryDark)),
+                      ],
+                    ),
+                  ),
+                const PopupMenuItem(value: 'profil', child: Text('Mon profil')),
+                const PopupMenuItem(value: 'amis', child: Text('Mes amis')),
+                const PopupMenuItem(value: 'groupes', child: Text('Groupes')),
+                const PopupMenuItem(
+                    value: 'contenus', child: Text('Contenus éducatifs')),
+                const PopupMenuItem(
+                    value: 'quiz', child: Text('Quiz entre amis')),
+                const PopupMenuItem(
+                    value: 'logout', child: Text('Se déconnecter')),
+              ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Avatar(letter: lettre, color: HomeColors.purple),
+              ),
+            );
           },
-          itemBuilder: (_) => const [
-            PopupMenuItem(value: 'profil', child: Text('Mon profil')),
-            PopupMenuItem(value: 'amis', child: Text('Mes amis')),
-            PopupMenuItem(value: 'groupes', child: Text('Groupes')),
-            PopupMenuItem(
-                value: 'contenus', child: Text('Contenus éducatifs')),
-            PopupMenuItem(value: 'quiz', child: Text('Quiz entre amis')),
-            PopupMenuItem(value: 'logout', child: Text('Se déconnecter')),
-          ],
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Avatar(letter: lettre, color: HomeColors.purple),
-          ),
         );
       },
     );

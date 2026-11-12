@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '/theme/app_theme.dart';
 import '../../theme/auth_layout.dart';
+import '../Admin/admin_login_page.dart';
 import 'connexion.dart';
 import 'inscription.dart';
 
@@ -57,6 +58,25 @@ class LoginPage extends StatelessWidget {
                     );
                   },
                   child: const Text('Créer un compte'),
+                ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primaryDark,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const AdminLoginPage()),
+                    );
+                  },
+                  icon: const Icon(Icons.admin_panel_settings_outlined,
+                      size: 20),
+                  label: const Text(
+                    'Connexion Administrateur',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),

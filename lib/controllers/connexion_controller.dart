@@ -9,10 +9,18 @@ class ConnexionController {
     required String motDePasse,
   }) async {
     try {
-      await _authService.seConnecter(
+      final cred = await _authService.seConnecter(
         email: email,
         motDePasse: motDePasse,
       );
+      final uid = cred.user?.uid;
+      if (uid != null) {
+        final bloque = await _authService.isUserBlocked(uid);
+        if (bloque) {
+          await _authService.seDeconnecter();
+          return 'Ce compte a été bloqué par l\'administrateur.';
+        }
+      }
       return null; // Succès
     } on FirebaseAuthException catch (e) {
       switch (e.code) {

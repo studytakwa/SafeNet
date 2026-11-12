@@ -55,4 +55,26 @@ class AuthService {
     }
     return null;
   }
+
+  Future<bool> isUserBlocked(String uid) async {
+    try {
+      final doc = await _firestore.collection('profils').doc(uid).get();
+      if (doc.exists) {
+        final data = doc.data();
+        if ((data?['bloque'] as bool?) ?? (data?['blocked'] as bool?) ?? false) {
+          return true;
+        }
+      }
+      final utilDoc = await _firestore.collection('utilisateurs').doc(uid).get();
+      if (utilDoc.exists) {
+        final data = utilDoc.data();
+        if ((data?['bloque'] as bool?) ?? (data?['blocked'] as bool?) ?? false) {
+          return true;
+        }
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
 }

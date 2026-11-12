@@ -15,12 +15,16 @@ class PostController {
   CollectionReference<Map<String, dynamic>> get _posts =>
       _db.collection('posts');
 
-  /// Fil d'actualité (les photos étant dans les documents, on limite à 20).
+  /// Fil d'actualité (les photos étant dans les documents, on limite à 30).
   Stream<List<PostModel>> flux() => _posts
       .orderBy('createdAt', descending: true)
-      .limit(20)
+      .limit(30)
       .snapshots()
-      .map((s) => s.docs.map(PostModel.fromDoc).toList());
+      .map((s) => s.docs
+          .map(PostModel.fromDoc)
+          .where((p) =>
+              p.status == 'approved' || p.status == '' || p.authorId == uid)
+          .toList());
 
   /// Publications d'un utilisateur (page profil).
   /// Tri côté client pour éviter de créer un index Firestore.
@@ -45,6 +49,7 @@ class PostController {
       return l.take(20).toList();
     });
   }
+
   /// Publications d'un type donné (astuce, note, question).
   /// Tri côté client : pas d'index Firestore à créer.
   Stream<List<PostModel>> fluxParType(String type) => _posts
@@ -53,8 +58,13 @@ class PostController {
       .map((s) {
     final l = s.docs.map(PostModel.fromDoc).toList();
     l.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return l.take(30).toList();
+    return l
+        .where((p) =>
+            p.status == 'approved' || p.status == '' || p.authorId == uid)
+        .take(30)
+        .toList();
   });
+
   Future<void> publier({
     required String authorName,
     required String text,
@@ -73,6 +83,7 @@ class PostController {
       'edited': false,
       'likes': <String>[],
       'commentCount': 0,
+      'status': 'pending',
     });
   }
 
