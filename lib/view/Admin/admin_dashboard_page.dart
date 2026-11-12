@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/admin_controller.dart';
 import '../../models/admin_models.dart';
+import '../../theme/app_theme.dart';
 import '../Home/widgets/home_common.dart';
 import 'admin_widgets.dart';
 
@@ -35,25 +36,60 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text('Tableau de bord',
-                    style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: HomeColors.ink)),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.primaryDark, AppColors.primary],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              IconButton(
-                tooltip: 'Actualiser',
-                icon: const Icon(Icons.refresh, color: HomeColors.brand),
-                onPressed: _recharger,
-              ),
-            ],
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryDark.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.admin_panel_settings_rounded,
+                      color: Colors.white, size: 32),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Tableau de bord Admin',
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white)),
+                      SizedBox(height: 4),
+                      Text('Vue d\'ensemble et modération de SafeNet',
+                          style: TextStyle(
+                              color: Colors.white70, fontSize: 13)),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Actualiser',
+                  icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+                  onPressed: _recharger,
+                ),
+              ],
+            ),
           ),
-          const Text("Vue d'ensemble de SafeNet",
-              style: TextStyle(color: HomeColors.mute)),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           FutureBuilder<AdminStats>(
             future: _stats,
             builder: (context, snap) {
@@ -77,7 +113,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               }
               final s = snap.data!;
               return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text('Statistiques clés',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: HomeColors.ink)),
+                  const SizedBox(height: 12),
                   LayoutBuilder(
                     builder: (context, cs) {
                       final cols = cs.maxWidth >= 640 ? 4 : 2;
@@ -120,6 +163,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     },
                   ),
                   const SizedBox(height: 24),
+                  const Text('Accès rapides',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: HomeColors.ink)),
+                  const SizedBox(height: 12),
                   _Raccourci(
                     icon: Icons.people_alt_outlined,
                     titre: 'Gestion des utilisateurs',
