@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../controllers/group_controller.dart';
@@ -70,11 +71,15 @@ class _GroupeChatPageState extends State<GroupeChatPage> {
                     color: Colors.redAccent),
               ),
               title: const Text('Cours / Document PDF'),
-              subtitle: const Text('Sélectionner un fichier de cours'),
+              subtitle: const Text('Sélectionner un fichier (PDF, DOC, TXT)'),
               onTap: () async {
                 Navigator.pop(context);
-                final file = await _picker.pickMedia();
-                if (file != null) {
+                final files = await FilePicker.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: ['pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx'],
+                );
+                if (files.isNotEmpty) {
+                  final file = files.first;
                   final bytes = await file.readAsBytes();
                   setState(() {
                     _fichierOctets = bytes;
