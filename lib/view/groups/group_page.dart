@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../controllers/group_controller.dart';
 import '../../models/groupe_model.dart';
+import '../../services/category_service.dart';
 import '../../theme/app_theme.dart';
 import '../Home/widgets/home_common.dart';
+import '../widgets/dynamic_category_field.dart';
 import 'group_chat_page.dart';
 
 /// Liste des groupes thématiques : Découvrir / Mes groupes + filtre par thème.
@@ -364,6 +366,7 @@ class _CreerGroupeDialogState extends State<_CreerGroupeDialog> {
     if (nom.isEmpty) return;
     setState(() => _loading = true);
     try {
+      await CategoryService().ajouterCategorie(_theme);
       final id = await _ctrl.creer(
         name: nom,
         theme: _theme,
@@ -397,21 +400,10 @@ class _CreerGroupeDialogState extends State<_CreerGroupeDialog> {
               decoration: const InputDecoration(labelText: 'Nom du groupe'),
             ),
             const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              initialValue: _theme,
-              decoration: const InputDecoration(labelText: 'Thème'),
-              items: [
-                for (final t in kThemes)
-                  DropdownMenuItem(
-                    value: t,
-                    child: Row(children: [
-                      Icon(iconeTheme(t), size: 18, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text(t),
-                    ]),
-                  ),
-              ],
-              onChanged: (v) => setState(() => _theme = v ?? _theme),
+            DynamicCategoryField(
+              selectedCategory: _theme,
+              onCategoryChanged: (v) => setState(() => _theme = v),
+              label: 'Thème du groupe',
             ),
             const SizedBox(height: 8),
             TextField(

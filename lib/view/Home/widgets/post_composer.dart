@@ -7,6 +7,8 @@ import '../../../controllers/profil_controller.dart';
 import '../../../models/groupe_model.dart'; // kThemes
 import '../../../models/post_model.dart';
 import '../../../models/profil_model.dart';
+import '../../../services/category_service.dart';
+import '../../widgets/dynamic_category_field.dart';
 import 'home_common.dart';
 
 /// Zone "Quoi de neuf ?" : type + texte + photo + humeur + Publier.
@@ -114,6 +116,9 @@ class _PostComposerState extends State<PostComposer> {
   Future<void> _publier(String nom) async {
     setState(() => _loading = true);
     try {
+      if (_type != 'publication') {
+        await CategoryService().ajouterCategorie(_categorie);
+      }
       await _posts.publier(
         authorName: nom,
         text: _ctrl.text.trim(),
@@ -203,24 +208,10 @@ class _PostComposerState extends State<PostComposer> {
               // Thème, seulement pour astuce / note / question
               if (_type != 'publication') ...[
                 const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  initialValue: _categorie,
-                  decoration: InputDecoration(
-                    labelText: 'Thème',
-                    isDense: true,
-                    filled: true,
-                    fillColor: HomeColors.input,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  items: [
-                    for (final t in kThemes)
-                      DropdownMenuItem(value: t, child: Text(t)),
-                  ],
-                  onChanged: (v) =>
-                      setState(() => _categorie = v ?? _categorie),
+                DynamicCategoryField(
+                  selectedCategory: _categorie,
+                  onCategoryChanged: (v) => setState(() => _categorie = v),
+                  label: 'Thème',
                 ),
               ],
               if (_imageBytes != null) ...[

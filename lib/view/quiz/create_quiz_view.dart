@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../controllers/quiz_controller.dart';
 import '../../models/quiz_model.dart';
+import '../../services/category_service.dart';
 import '../../theme/app_theme.dart';
 import '../Home/widgets/home_common.dart';
+import '../widgets/dynamic_category_field.dart';
 
 class _QuestionForm {
   final texte = TextEditingController();
@@ -25,8 +27,6 @@ class _CreateQuizViewState extends State<CreateQuizView> {
   String _categorie = 'Sciences';
   bool _loading = false;
 
-  static const _categories = ['Sciences', 'Sport', 'Art', 'Informatique', 'Autre'];
-
   Future<void> _publier() async {
     if (_titre.text.trim().isEmpty) {
       _msg('Donnez un titre à votre quiz.');
@@ -43,6 +43,7 @@ class _CreateQuizViewState extends State<CreateQuizView> {
           texte: f.texte.text.trim(), options: opts, bonneReponse: f.bonne));
     }
     setState(() => _loading = true);
+    await CategoryService().ajouterCategorie(_categorie);
     final code = await _controller.creerQuiz(
       titre: _titre.text.trim(),
       categorie: _categorie,
@@ -155,20 +156,10 @@ class _CreateQuizViewState extends State<CreateQuizView> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _categorie,
-                    decoration: InputDecoration(
-                      labelText: 'Catégorie',
-                      filled: true,
-                      fillColor: AppColors.background,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    items: _categories
-                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                        .toList(),
-                    onChanged: (v) => setState(() => _categorie = v!),
+                  DynamicCategoryField(
+                    selectedCategory: _categorie,
+                    onCategoryChanged: (v) => setState(() => _categorie = v),
+                    label: 'Catégorie',
                   ),
                 ],
               ),

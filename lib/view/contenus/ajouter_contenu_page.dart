@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import '../../controllers/contenu_controller.dart';
 import '../../models/contenu_model.dart';
 import '../../models/groupe_model.dart';
+import '../../services/category_service.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/auth_layout.dart'; // champDecoration, styleBoutonPrincipal
 import '../Home/widgets/home_common.dart';
+import '../widgets/dynamic_category_field.dart';
 
 class AjouterContenuPage extends StatefulWidget {
   const AjouterContenuPage({super.key});
@@ -35,6 +37,7 @@ class _AjouterContenuPageState extends State<AjouterContenuPage> {
     if (!_cle.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
+      await CategoryService().ajouterCategorie(_categorie);
       await _ctrl.partager(
         titre: _titre.text.trim(),
         description: _description.text.trim(),
@@ -89,15 +92,10 @@ class _AjouterContenuPageState extends State<AjouterContenuPage> {
                   onChanged: (v) => setState(() => _type = v ?? _type),
                 ),
                 const SizedBox(height: 14),
-                DropdownButtonFormField<String>(
-                  initialValue: _categorie,
-                  decoration: champDecoration(
-                      label: 'Thème', icone: Icons.label_outline),
-                  items: [
-                    for (final t in kThemes)
-                      DropdownMenuItem(value: t, child: Text(t)),
-                  ],
-                  onChanged: (v) => setState(() => _categorie = v ?? _categorie),
+                DynamicCategoryField(
+                  selectedCategory: _categorie,
+                  onCategoryChanged: (v) => setState(() => _categorie = v),
+                  label: 'Thème',
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
