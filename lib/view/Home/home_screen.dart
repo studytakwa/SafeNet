@@ -52,12 +52,7 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         actions: [
-          if (!showSearch)
-            IconButton(
-              onPressed: () {},
-              tooltip: 'Rechercher',
-              icon: const Icon(Icons.search, color: AppColors.primaryDark),
-            ),
+
           // Sur téléphone, le quiz est dans le menu de l'avatar
           // (pour éviter le débordement de la barre du haut).
           if (showSearch)
