@@ -4,23 +4,18 @@ import '../Home/widgets/home_common.dart';
 import '../authentification/auth_wrapper.dart';
 import 'admin_dashboard_page.dart';
 import 'admin_post_page.dart';
+import 'admin_reclamations_page.dart';
 import 'admin_user_page.dart';
-
-/// Structure de l'espace admin : navigation (barre latérale sur grand écran,
-/// barre du bas sur mobile) + vérification du rôle administrateur.
 class AdminShell extends StatefulWidget {
   const AdminShell({super.key});
-
   @override
   State<AdminShell> createState() => _AdminShellState();
 }
-
 class _AdminShellState extends State<AdminShell> {
   final _c = AdminController();
   late final Stream<bool> _role = _c.roleAdmin();
   int _index = 0;
   int _postsTab = 0;
-
   Future<void> _quitter() async {
     await _c.deconnecter();
     if (!mounted) return;
@@ -29,7 +24,6 @@ class _AdminShellState extends State<AdminShell> {
       (route) => false,
     );
   }
-
   Future<void> _confirmerDeconnexion() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -64,7 +58,6 @@ class _AdminShellState extends State<AdminShell> {
     );
     if (ok == true) await _quitter();
   }
-
   Widget _page() {
     switch (_index) {
       case 1:
@@ -72,6 +65,8 @@ class _AdminShellState extends State<AdminShell> {
       case 2:
         return AdminPostsPage(
             key: ValueKey('posts$_postsTab'), initialTab: _postsTab);
+      case 3:
+        return const AdminReclamationsPage();
       default:
         return AdminDashboardPage(
           onOpenUsers: () => setState(() => _index = 1),
@@ -82,7 +77,6 @@ class _AdminShellState extends State<AdminShell> {
         );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<bool>(
@@ -128,6 +122,7 @@ class _AdminShellState extends State<AdminShell> {
           (Icons.dashboard_outlined, Icons.dashboard, 'Tableau de bord'),
           (Icons.people_outline, Icons.people, 'Utilisateurs'),
           (Icons.fact_check_outlined, Icons.fact_check, 'Publications'),
+          (Icons.report_problem_outlined, Icons.report_problem, 'Réclamations'),
         ];
 
         return LayoutBuilder(

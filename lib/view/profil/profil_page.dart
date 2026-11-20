@@ -4,6 +4,7 @@ import '../../controllers/profil_controller.dart';
 import '../../models/profil_model.dart';
 import '../../theme/app_theme.dart';
 import '../Home/widgets/post_list.dart';
+import '../posts/report_dialog.dart';
 import '../social/friend_button.dart';
 import 'modifier_profil_page.dart';
 import 'widgets/profil_widgets.dart';
@@ -106,6 +107,15 @@ class ProfilPage extends StatelessWidget {
                             ] else ...[
                               const SizedBox(height: 22),
                               FriendButton(otherUid: idAffiche),
+                              const SizedBox(height: 12),
+                              TextButton.icon(
+                                style: TextButton.styleFrom(
+                                    foregroundColor: Colors.redAccent),
+                                onPressed: () => showReportDialog(context,
+                                    cibleId: idAffiche, cibleType: 'profil'),
+                                icon: const Icon(Icons.flag_outlined, size: 18),
+                                label: const Text('Signaler ce profil'),
+                              ),
                             ],
                           ],
                         ),

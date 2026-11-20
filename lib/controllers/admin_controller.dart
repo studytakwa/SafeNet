@@ -1,8 +1,6 @@
 import '../models/admin_models.dart';
 import '../models/post_model.dart';
 import '../services/admin_service.dart';
-
-/// Logique de l'espace administrateur (utilisée par les vues).
 class AdminController {
   final _service = AdminService();
 
@@ -17,8 +15,6 @@ class AdminController {
 
   // Utilisateurs
   Stream<List<AdminUser>> utilisateurs() => _service.utilisateurs();
-
-  /// Recherche par nom (insensible à la casse).
   List<AdminUser> filtrer(List<AdminUser> liste, String recherche) {
     final q = recherche.trim().toLowerCase();
     if (q.isEmpty) return liste;

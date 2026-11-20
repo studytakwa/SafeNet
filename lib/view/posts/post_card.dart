@@ -6,6 +6,7 @@ import '../../../controllers/post_controller.dart';
 import '../../../models/post_model.dart';
 import '../../../theme/app_theme.dart';
 import 'comments_sheet.dart';
+import 'report_dialog.dart';
 import 'package:safenet/view/Home/widgets/home_common.dart';
 import 'package:safenet/view/Home/widgets/type_badge.dart';
 
@@ -68,19 +69,25 @@ class PostCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (isMine)
-                  PopupMenuButton<String>(
-                    tooltip: 'Options',
-                    icon: const Icon(Icons.more_vert, color: HomeColors.mute),
-                    onSelected: (v) {
-                      if (v == 'edit') _edit(context, ctrl);
-                      if (v == 'delete') _delete(context, ctrl);
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Modifier')),
-                      PopupMenuItem(value: 'delete', child: Text('Supprimer')),
+                PopupMenuButton<String>(
+                  tooltip: 'Options',
+                  icon: const Icon(Icons.more_vert, color: HomeColors.mute),
+                  onSelected: (v) {
+                    if (v == 'edit') _edit(context, ctrl);
+                    if (v == 'delete') _delete(context, ctrl);
+                    if (v == 'report') showReportDialog(context, cibleId: post.id, cibleType: 'post');
+                  },
+                  itemBuilder: (_) => [
+                    if (isMine) ...[
+                      const PopupMenuItem(value: 'edit', child: Text('Modifier')),
+                      const PopupMenuItem(value: 'delete', child: Text('Supprimer')),
                     ],
-                  ),
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Text('Signaler / Réclamation', style: TextStyle(color: Colors.redAccent)),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

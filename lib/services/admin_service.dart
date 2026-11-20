@@ -3,27 +3,19 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/admin_models.dart';
 import '../models/post_model.dart';
-
-/// Communication avec Firebase pour l'espace administrateur.
-/// Aucune logique d'interface ici : uniquement Auth + Firestore.
 class AdminService {
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
 
   User? get utilisateurCourant => _auth.currentUser;
   String get uid => _auth.currentUser?.uid ?? '';
-
   // ───────────── Authentification ─────────────
-
   Future<void> connecter(String email, String motDePasse) =>
       _auth.signInWithEmailAndPassword(
         email: email.trim().toLowerCase(),
         password: motDePasse,
       );
-
   Future<void> deconnecter() => _auth.signOut();
-
-  /// Rôle administrateur = document `admins/{uid}` avec `role == 'admin'`.
   Future<bool> aRoleAdmin(String userId) async {
     if (userId.isEmpty) return false;
     try {

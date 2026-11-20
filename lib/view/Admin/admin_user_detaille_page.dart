@@ -22,18 +22,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
 
   bool _enCours = false;
 
-  /// Affiche une valeur Firestore sans casser l'écran (photos, listes…).
-  String _valeur(dynamic v) {
-    if (v == null) return '—';
-    if (v is String) return v.length > 120 ? '(donnée volumineuse)' : v;
-    if (v is num || v is bool) return '$v';
-    if (v is DateTime) return dateComplete(v);
-    try {
-      final d = (v as dynamic).toDate();
-      if (d is DateTime) return dateComplete(d);
-    } catch (_) {}
-    return '(${v.runtimeType})';
-  }
+
 
   Future<void> _supprimerCompte() async {
     final ok = await showDialog<bool>(
@@ -146,34 +135,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
                 ),
               ),
 
-              HomeCard(
-                child: ExpansionTile(
-                  shape: const Border(),
-                  title: const Text('Informations Firestore',
-                      style: TextStyle(fontWeight: FontWeight.w700)),
-                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  children: [
-                    for (final e in u.champs.entries)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 120,
-                              child: Text(e.key,
-                                  style: const TextStyle(
-                                      color: HomeColors.mute, fontSize: 13)),
-                            ),
-                            Expanded(
-                                child: Text(_valeur(e.value),
-                                    style: const TextStyle(fontSize: 13))),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+
               const Padding(
                 padding: EdgeInsets.fromLTRB(4, 8, 4, 12),
                 child: Text('Publications',

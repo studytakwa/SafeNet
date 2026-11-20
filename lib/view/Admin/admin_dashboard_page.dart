@@ -4,8 +4,6 @@ import '../../models/admin_models.dart';
 import '../../theme/app_theme.dart';
 import '../Home/widgets/home_common.dart';
 import 'admin_widgets.dart';
-
-/// Tableau de bord : statistiques + accès rapide aux sections.
 class AdminDashboardPage extends StatefulWidget {
   final VoidCallback onOpenUsers;
   final void Function(int tab) onOpenPosts;
@@ -14,17 +12,13 @@ class AdminDashboardPage extends StatefulWidget {
     required this.onOpenUsers,
     required this.onOpenPosts,
   });
-
   @override
   State<AdminDashboardPage> createState() => _AdminDashboardPageState();
 }
-
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   final _c = AdminController();
   late Future<AdminStats> _stats = _c.statistiques();
-
   void _recharger() => setState(() => _stats = _c.statistiques());
-
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(

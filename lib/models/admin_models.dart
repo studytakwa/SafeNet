@@ -1,7 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-/// ⚠️ À adapter à votre base : collection des profils et noms des champs
-/// (regardez votre profil_service.dart / profil_model.dart).
 const kCollectionProfils = 'profils';
 const kChampNom = 'nom';
 const kChampEmail = 'email';
@@ -20,8 +17,6 @@ class AdminStats {
     required this.refusees,
   });
 }
-
-/// Un utilisateur tel que l'administrateur le consulte (lecture seule).
 class AdminUser {
   final String uid;
   final String nom;
@@ -29,8 +24,6 @@ class AdminUser {
   final String bio;
   final bool bloque;
   final String? motifBlocage;
-
-  /// Tous les champs du document Firestore (pour la fiche détaillée).
   final Map<String, dynamic> champs;
 
   const AdminUser({
